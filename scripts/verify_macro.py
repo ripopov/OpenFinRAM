@@ -74,8 +74,13 @@ def _lvs_findings(result) -> dict:
         for circuit in result.summary["circuits"]
         if circuit["status"] in ("mismatch", "nomatch")
     }
+    # KLayout can match symmetric networks with permuted external pins.
+    # A structural match with a different address map breaks the SRAM interface.
+    top = next((c for c in result.summary["circuits"] if c["layout"] == result.summary["top"]), {})
+    renamed = [(a, b) for a, b in top.get("renamed_pins", []) if a.lower() != b.lower()]
     return {
-        "matched": result.matched,
+        "matched": result.matched and bool(top) and not renamed,
+        "renamed_top_pins": renamed,
         "series_order_cells": sorted(result.series_order_cells),
         "failing": list(result.failing),
         "unmatched": unmatched,
@@ -159,6 +164,7 @@ def _merge_findings(parts: list[dict]) -> dict:
         "supply_shorts": sorted({s for p in parts for s in p["supply_shorts"]}),
         "report": [p["report"] for p in parts],
         "per_bank": True,
+        "renamed_top_pins": {str(i): p["renamed_top_pins"] for i, p in enumerate(parts) if p["renamed_top_pins"]},
     }
 
 
@@ -236,6 +242,8 @@ def verify(result_dir: Path, out: Path, *, cell: str | None = None, drc: bool = 
                                       timeout=lvs_timeout)  # fmt: skip
         strict.append(_lvs_findings(result))
         print(("" if units == 1 else f"== bank {index}\n") + result.describe())
+        if strict[-1]["renamed_top_pins"]:
+            print(f"FAIL: renamed top-level pins: {strict[-1]['renamed_top_pins']}")
         if not result.matched:
             result = run_hierarchical_lvs(view_gds, view_netlist, out / f"{tag}lvs_diagnostic", cell_name=cell,
                                           flatten_circuits=BITCELLS, double_implant_is_tap=False,

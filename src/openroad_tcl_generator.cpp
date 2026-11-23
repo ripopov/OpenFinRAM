@@ -471,6 +471,8 @@ dict for {net pins} $dp_reset_nets {
     // Fill before routing so filler geometry participates in detailed-route
     // legality.  Do not attempt a second decap-as-filler pass into zero gaps.
     file << "filler_placement \"FILLER_ASAP7_75t_R FILLERxp5_ASAP7_75t_R\"\n";
+    // CTS, timing repair and filler placement insert instances after the initial rail hookup.
+    file << "global_connect\n";
     if (band_.enabled) {
         // Timing is closed on the ports' SDC loads; now route the select
         // outputs onto the strips' pins themselves.

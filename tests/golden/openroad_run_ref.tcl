@@ -91,6 +91,7 @@ detailed_placement -incremental
 check_placement -verbose -report_file_name placement_post_cts.rpt
 
 filler_placement "FILLER_ASAP7_75t_R FILLERxp5_ASAP7_75t_R"
+global_connect
 global_route
 detailed_route -output_drc detailed_route_drc.rpt
 
