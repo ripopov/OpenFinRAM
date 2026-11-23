@@ -21,7 +21,7 @@ Deck (one FinFET, BSIM-CMG):
 Simulators:
   * ngspice (default) uses planar stand-in -- harness smoke test, NOT ASAP7
   * Xyce (--simulator xyce) with --real-device and --models 7nm_TT.pm gives
-    real ASAP7 BSIM-CMG numbers (level 72 -> 110, NFIN not W).
+    real ASAP7 BSIM-CMG numbers (level 72 -> 107, NFIN not W).
 
     uv run python scripts/characterize_gds.py --gds nmos_fin_111.gds
     uv run python scripts/characterize_gds.py --gds nmos_fin_111.gds --simulator xyce --real-device --models tech/models/hspice/7nm_TT.pm --mode idvg
