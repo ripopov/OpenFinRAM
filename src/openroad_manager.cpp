@@ -84,8 +84,7 @@ bool OpenRoadManager::run_openroad_flow() {
         OpenFinRAM::LayerMap map;
         map.init_asap7_layermap();
         gdstk::ErrorCode error = gdstk::ErrorCode::NoError;
-        auto lib = gdstk::read_gds(join_path(get_current_dir_name(),
-            "tech/gds/sram_6t_iocolumn.gds").c_str(), 0, 1e-2, nullptr, &error);
+        auto lib = gdstk::read_gds(resource_path("tech/gds/sram_6t_iocolumn.gds").c_str(), 0, 1e-2, nullptr, &error);
         const std::string io_name = cli_options_.num_rows_per_mux == 4
             ? std::string("iocol_sram_6t") : "iocol_sram_6t_x" + std::to_string(cli_options_.num_rows_per_mux);
         auto* io = lib.get_cell(io_name.c_str());
@@ -104,8 +103,7 @@ bool OpenRoadManager::run_openroad_flow() {
         OpenFinRAM::LayerMap map;
         map.init_asap7_layermap();
         gdstk::ErrorCode error = gdstk::ErrorCode::NoError;
-        auto lib = gdstk::read_gds(join_path(get_current_dir_name(),
-            "tech/gds/sram_8t_iocolumn.gds").c_str(), 0, 1e-2, nullptr, &error);
+        auto lib = gdstk::read_gds(resource_path("tech/gds/sram_8t_iocolumn.gds").c_str(), 0, 1e-2, nullptr, &error);
         // One IO per end of the bitlines: port A | cap | one array | port B.
         auto* io_a = lib.get_cell("iocol_sram_8t_a");
         auto* io_b = lib.get_cell("iocol_sram_8t_b");
@@ -152,7 +150,7 @@ bool OpenRoadManager::run_openroad_flow() {
         const std::string local_python = join_path(get_current_dir_name(), ".venv/bin/python");
         std::ostringstream plan;
         plan << (file_exists(local_python) ? local_python : std::string("python3"))
-             << " '" << join_path(get_current_dir_name(), "scripts/compile_asap7_2rw.py") << "'"
+             << " '" << resource_path("scripts/compile_asap7_2rw.py") << "'"
              << " --wordlines " << cli_options_.num_wls
              << " --bits " << cli_options_.num_data_bits
              << " --banks " << cli_options_.num_banks

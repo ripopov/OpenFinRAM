@@ -12,6 +12,7 @@
 #include "main_config_helpers.hpp"
 
 std::string get_executable_directory();
+std::string resource_path(const std::string& relative);
 
 std::string join_path(const std::string& base, const std::string& name);
 

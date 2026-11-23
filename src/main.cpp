@@ -75,10 +75,9 @@ int main(int argc, char **argv) {
     // (tech/gds, scripts/tech_gds.py), which the build writes; write any that
     // are missing, as a run straight from a checkout has none.
     if (!cli_options.single_port || cli_options.bitcell_6t) {
-        const std::string root = get_current_dir_name();
-        const std::string venv = join_path(root, ".venv/bin/python");
+        const std::string venv = resource_path(".venv/bin/python");
         const std::string command = (file_exists(venv) ? "'" + venv + "'" : std::string("python3"))
-            + " '" + join_path(root, "scripts/tech_gds.py") + "' --if-missing";
+            + " '" + resource_path("scripts/tech_gds.py") + "' --if-missing";
         if (std::system(command.c_str()) != 0) {
             LOGE << "Cannot generate the cell libraries in tech/gds: " << command;
             return 1;
@@ -189,13 +188,13 @@ int main(int argc, char **argv) {
         // The 6T macro's timing and energy follow its size: with no measured
         // JSON, scripts/timing_model_6t.py estimates them for this geometry
         // from the model fit to whole-macro simulations (tech/timing/).
-        const std::string model = "tech/timing/sram_6t_timing.json";
+        const std::string model = resource_path("tech/timing/sram_6t_timing.json");
         if (liberty_from.empty() && cli_options.bitcell_6t && file_exists(model)) {
             const std::string local_python = ".venv/bin/python";
             const std::string estimate = result_dir + "/" + cell_name + ".timing.json";
             const std::string command =
                 (file_exists(local_python) ? local_python : std::string("python3")) +
-                " scripts/timing_model_6t.py estimate --model " + model +
+                " '" + resource_path("scripts/timing_model_6t.py") + "' estimate --model '" + model + "'" +
                 " --wordlines " + std::to_string(cli_options.num_wls) +
                 " --bits " + std::to_string(cli_options.num_data_bits) +
                 " --mux " + std::to_string(cli_options.num_rows_per_mux) +

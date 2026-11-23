@@ -35,6 +35,15 @@ std::string join_path(const std::string& base, const std::string& name) {
     return base + "/" + name;
 }
 
+std::string resource_path(const std::string& relative) {
+    const auto cwd = join_path(get_current_dir_name(), relative);
+    if (file_exists(cwd)) return cwd;
+    const auto exe = get_executable_directory();
+    const auto adjacent = join_path(exe, relative);
+    if (file_exists(adjacent)) return adjacent;
+    return join_path(exe, "../share/OpenFinRAM/" + relative);
+}
+
 bool create_directory(const std::string& path, std::string* error) {
     if (path.empty()) {
         return true;

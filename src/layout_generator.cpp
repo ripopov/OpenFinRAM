@@ -19,7 +19,7 @@ bool LayoutGenerator::load_sram_gds() {
     const std::string filename = cli_options_.single_port
         ? "tech/gds/srambank_32b_boundary_2.gds"
         : "tech/gds/sram_8t_iocolumn.gds";
-    std::string path = join_path(get_current_dir_name(), filename);
+    std::string path = resource_path(filename);
 
     // gdstk only writes error_code on failure; it must start at NoError or a
     // successful read fails this check on uninitialized stack data.
@@ -3556,7 +3556,7 @@ bool LayoutGenerator::create_dual_port_macro() {
         return escaped + "'";
     };
     std::ostringstream command;
-    command << quote(python) << " " << quote(join_path(root, "scripts/compile_asap7_2rw.py"))
+    command << quote(python) << " " << quote(resource_path("scripts/compile_asap7_2rw.py"))
         << " --wordlines " << cli_options_.num_wls
         << " --bits " << cli_options_.num_data_bits
         << " --banks " << cli_options_.num_banks

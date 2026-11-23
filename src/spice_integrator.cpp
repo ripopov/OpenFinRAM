@@ -547,7 +547,7 @@ bool SpiceIntegrator::flatten_netlist(const std::string& input_path, const std::
         return false;
     }
 
-    std::string cdl_path = join_path(get_current_dir_name(), "tech/cdl/asap7sc7p5t_28_R.cdl");
+    std::string cdl_path = resource_path("tech/cdl/asap7sc7p5t_28_R.cdl");
     std::ifstream cdl_file(cdl_path.c_str());
     if (!cdl_file.is_open()) {
         LOGE << "  ✗ Error: Cannot open CDL file for flattening: " << cdl_path;
