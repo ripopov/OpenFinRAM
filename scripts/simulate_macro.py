@@ -521,7 +521,7 @@ def build_deck(netlist: Path, model: Path, top: str, pins: tuple[str, ...], cell
         f".include {netlist}",
         f"VVDD vdd 0 {vdd}",
         "VVSS vss 0 0",
-        f".temp {temperature:g}",
+        f".options device temp={temperature:g}",
         f"Vclk clk 0 PULSE(0 {vdd} {first - clock_edge / 2:.9g} {clock_edge:.9g} {clock_edge:.9g} {period / 2 - clock_edge:.9g} {period:.9g})",
         f"Vrst rst_n 0 {pwl([(0, 0), (period / 4, 0), (period / 4 + edge, vdd)])}",
     ]

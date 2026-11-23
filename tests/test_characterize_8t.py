@@ -157,7 +157,7 @@ def test_clock_slew_is_20_to_80_percent_and_preserves_the_clock_midpoint():
     assert pulse[3] == pytest.approx(50e-12)  # full swing corresponding to 30 ps 20-80%
     assert pulse[2] + pulse[3] / 2 == pytest.approx(2e-9)
     assert plan["clock_slew"] == pytest.approx(30e-12)
-    assert ".temp 125" in text
+    assert ".options device temp=125" in text
     assert "initial_interval=5e-13" in text
 
 
