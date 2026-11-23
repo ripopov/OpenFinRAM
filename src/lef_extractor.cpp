@@ -214,6 +214,7 @@ void classify_pin(MacroPin& pin) {
         pin.direction = "INOUT";
         pin.use = "GROUND";
     } else if (name == "q" || name.rfind("q[", 0) == 0 ||
+               name.rfind("q_a[", 0) == 0 || name.rfind("q_b[", 0) == 0 ||
                name == "dataout" || name.rfind("dataout[", 0) == 0) {
         pin.direction = "OUTPUT";
         pin.use = "SIGNAL";

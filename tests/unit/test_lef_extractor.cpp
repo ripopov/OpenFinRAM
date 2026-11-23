@@ -68,6 +68,8 @@ std::string write_fixture_gds(const std::filesystem::path& dir,
     };
     const PinSpec pins[] = {
         {"CLK", 19, 2.000, 2.000, 2.054, 2.108},   // M1
+        {"Q_A[0]", 19, 3.000, 2.000, 3.054, 2.108},
+        {"Q_B[0]", 19, 4.000, 2.000, 4.054, 2.108},
         {"WLT0", 30, 8.000, 3.000, 8.162, 3.054},  // M3
     };
     for (const PinSpec& spec : pins) {
@@ -117,6 +119,8 @@ TEST(LefExtractorTest, ExportsSizeAndPinsFromBoundary) {
         << error;
 
     const std::string lef = read_file(out_path);
+    EXPECT_NE(lef.find("PIN Q_A[0]\n    DIRECTION OUTPUT"), std::string::npos);
+    EXPECT_NE(lef.find("PIN Q_B[0]\n    DIRECTION OUTPUT"), std::string::npos);
     EXPECT_NE(lef.find("MACRO lef_test_macro"), std::string::npos);
     EXPECT_NE(lef.find("CLASS BLOCK ;"), std::string::npos);
     // SIZE comes from the BOUNDARY polygon.
