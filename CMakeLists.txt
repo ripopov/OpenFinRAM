@@ -56,17 +56,11 @@ target_link_libraries(OpenFinRAM gdstk argparse Threads::Threads)
 
 include(GNUInstallDirs)
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/scripts")
-configure_file(
-    "${CMAKE_SOURCE_DIR}/scripts/def_to_gds.py"
-    "${CMAKE_BINARY_DIR}/scripts/def_to_gds.py"
-    COPYONLY
-)
-
+foreach(helper IN ITEMS def_to_gds.py mapped_verilog_to_spice.py)
+    configure_file("scripts/${helper}" "${CMAKE_BINARY_DIR}/scripts/${helper}" COPYONLY)
+    install(PROGRAMS "scripts/${helper}" DESTINATION "${CMAKE_INSTALL_DATADIR}/OpenFinRAM/scripts")
+endforeach()
 install(TARGETS OpenFinRAM RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(
-    PROGRAMS "${CMAKE_SOURCE_DIR}/scripts/def_to_gds.py"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/OpenFinRAM/scripts"
-)
 
 # ---------------------------------------------------------------------------
 # Tests (ctest). The harness scripts cd to the repo root themselves, so they
@@ -79,6 +73,8 @@ include(CTest)
 if(BUILD_TESTING)
     add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
     add_subdirectory(tests)
+    add_test(NAME controller_conversion_check
+        COMMAND python3 "${CMAKE_SOURCE_DIR}/tests/test_mapped_verilog_to_spice.py")
 
     add_test(
         NAME decode_check

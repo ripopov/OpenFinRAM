@@ -27,6 +27,17 @@ std::string shell_quote(const std::string& value) {
     return quoted;
 }
 
+std::string find_script(const std::string& filename, const std::string& override_path = {}) {
+    const std::string exe = get_executable_directory();
+    const std::string relative = "scripts/" + filename;
+    for (const auto& candidate : {override_path, join_path(get_current_dir_name(), relative),
+                                  join_path(exe, relative), join_path(exe, "../" + relative),
+                                  join_path(exe, "../share/OpenFinRAM/" + relative)}) {
+        if (!candidate.empty() && file_exists(candidate)) return candidate;
+    }
+    return {};
+}
+
 }  // namespace
 
 namespace OpenFinRAM {
@@ -399,23 +410,7 @@ bool OpenRoadTclGenerator::stream_def_to_gds(
         }
     }
 
-    std::vector<std::string> script_candidates;
-    if (!script_path.empty()) {
-        script_candidates.push_back(script_path);
-    }
-    script_candidates.push_back(join_path(get_current_dir_name(), "scripts/def_to_gds.py"));
-    script_candidates.push_back(join_path(get_executable_directory(), "scripts/def_to_gds.py"));
-    script_candidates.push_back(join_path(get_executable_directory(), "../scripts/def_to_gds.py"));
-    script_candidates.push_back(join_path(
-        get_executable_directory(), "../share/OpenFinRAM/scripts/def_to_gds.py"));
-
-    std::string converter_script;
-    for (const std::string& candidate : script_candidates) {
-        if (file_exists(candidate)) {
-            converter_script = candidate;
-            break;
-        }
-    }
+    const std::string converter_script = find_script("def_to_gds.py", script_path);
     if (converter_script.empty()) {
         LOGE << "Cannot stream DEF to GDS; scripts/def_to_gds.py was not found";
         return false;
@@ -456,23 +451,22 @@ bool OpenRoadTclGenerator::run_v2lvs(const std::string& work_dir,
                    const std::string& verilog_file,
                    const std::string& spice_file,
                    const std::string& cdl_file) const {
-    auto quote = [](const std::string& value) {
-        std::string escaped = "'";
-        for (char c : value) escaped += c == '\'' ? "'\\''" : std::string(1, c);
-        return escaped + "'";
-    };
     const std::string cdl = cdl_file.empty()
         ? join_path(get_current_dir_name(), "tech/cdl/asap7sc7p5t_28_R.cdl") : cdl_file;
     if (!file_exists(cdl)) {
         LOGE << "Mapped controller conversion requires CDL: " << cdl;
         return false;
     }
-    const std::string converter = join_path(get_current_dir_name(), "scripts/mapped_verilog_to_spice.py");
-    const std::string command = "python3 " + quote(converter)
-        + " --verilog " + quote(join_path(work_dir, verilog_file))
-        + " --cdl " + quote(cdl)
-        + " --output " + quote(join_path(work_dir, spice_file))
-        + " > " + quote(join_path(work_dir, "verilog_to_spice.log")) + " 2>&1";
+    const std::string converter = find_script("mapped_verilog_to_spice.py");
+    if (converter.empty()) {
+        LOGE << "Cannot convert controller to SPICE; scripts/mapped_verilog_to_spice.py was not found";
+        return false;
+    }
+    const std::string command = "python3 " + shell_quote(converter)
+        + " --verilog " + shell_quote(join_path(work_dir, verilog_file))
+        + " --cdl " + shell_quote(cdl)
+        + " --output " + shell_quote(join_path(work_dir, spice_file))
+        + " > " + shell_quote(join_path(work_dir, "verilog_to_spice.log")) + " 2>&1";
     if (std::system(command.c_str()) != 0) {
         LOGE << "Mapped controller SPICE conversion failed; see " << work_dir << "/verilog_to_spice.log";
         return false;

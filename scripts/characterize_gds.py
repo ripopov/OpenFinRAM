@@ -42,6 +42,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from asap7_models import prep_models
+
 import gdstk
 
 VDD = 0.7
@@ -185,16 +187,6 @@ def extract_device(gds_path: Path) -> Device:
     return Device(gds=gds_path, cell=cell.name, type=typ, l_m=l_m, nfin=nfin, w_m=w_m)
 
 
-def prep_models(models: Path | None, simulator: str, workdir: Path) -> tuple[str, str]:
-    if models is None:
-        return STANDIN_MODELS, "planar stand-in (NOT ASAP7-accurate)"
-    if simulator == "xyce":
-        adapted = workdir / f"{models.stem}_xyce.pm"
-        adapted.write_text(models.read_text().replace("level = 72", "level = 110"))
-        return f".include {adapted}", f"{models.name} -> Xyce BSIM-CMG L110 (real ASAP7)"
-    return f".include {models}", f"{models.name} (real device card)"
-
-
 def strip_w(text: str) -> str:
     return re.sub(r"\s+[wW]=\S+", "", text)
 
@@ -292,7 +284,7 @@ def main(argv: list[str]) -> int:
     # Preserve original path for synthetic 231 alias; extraction handles fallback
     gds_path = args.gds
     dev = extract_device(gds_path)
-    models_inc, model_desc = prep_models(args.models, args.simulator, args.workdir)
+    models_inc, model_desc = prep_models(args.models, args.simulator, args.workdir, STANDIN_MODELS)
 
     print(f"GDS extraction | {gds_path} cell={dev.cell} type={dev.type} L={dev.l_m*1e9:.1f}nm nfin={dev.nfin} | sim={args.simulator} model={model_desc}")
     print(f"  geometry: Gate L={dev.l_m:.3e} m, NFIN={dev.nfin} (W_eff ~{dev.w_m*1e9:.1f}nm for stand-in)")

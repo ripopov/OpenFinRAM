@@ -39,8 +39,6 @@ def convert(design, cdl, top="ctrl_decode"):
         if tokens and tokens[0].lower() == ".subckt":
             signatures[tokens[1]] = tokens[2:]
     module = design["modules"][top]
-    if not module["cells"]:
-        raise RuntimeError("empty controller netlist")
     names = {"0": "VSS", "1": "VDD"}
     ports, aliases = [], []
     for port, bit in port_nodes(module):
@@ -64,6 +62,7 @@ def convert(design, cdl, top="ctrl_decode"):
     ]
     for i, (a, b) in enumerate(aliases):
         lines.append(f"Valias{i} {a} {b} 0")
+    electrical_cells = 0
     for index, (name, cell) in enumerate(module["cells"].items()):
         kind = cell["type"]
         if (
@@ -95,6 +94,9 @@ def convert(design, cdl, top="ctrl_decode"):
                 nodes.append(node(conns[pin][0]))
         lines.append(f"* {name}")
         lines.append(f"X{index} " + " ".join(nodes) + f" {kind}")
+        electrical_cells += 1
+    if not electrical_cells:
+        raise RuntimeError("empty controller netlist: no electrical instances")
     lines.append(f".ENDS {top}")
     return "\n".join(lines) + "\n"
 
